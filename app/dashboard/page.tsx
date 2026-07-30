@@ -5,38 +5,44 @@ import { AccountSummary } from "@/components/dashboard/account-summary"
 import { RecentTransactions } from "@/components/dashboard/recent-transactions"
 import { BudgetOverview } from "@/components/dashboard/budget-overview"
 import { QuickActions } from "@/components/dashboard/quick-actions"
+import { isDemoMode, MOCK_PROFILE, MOCK_ACCOUNTS, MOCK_TRANSACTIONS, MOCK_LOANS, MOCK_BUDGETS } from "@/lib/demo"
 
 export default async function DashboardPage() {
-  const supabase = await createClient()
+  let profile: any = MOCK_PROFILE
+  let accounts: any[] = MOCK_ACCOUNTS
+  let transactions: any[] = MOCK_TRANSACTIONS
+  let loans: any[] = MOCK_LOANS
+  let budgets: any[] = MOCK_BUDGETS
 
-  const { data: user, error: userError } = await supabase.auth.getUser()
-  if (userError || !user.user) {
-    redirect("/auth/login")
+  if (!isDemoMode()) {
+    const supabase = await createClient()
+    const { data: user, error: userError } = await supabase.auth.getUser()
+    if (userError || !user.user) {
+      redirect("/auth/login")
+    }
+
+    const { data: p } = await supabase.from("profiles").select("*").eq("id", user.user.id).single()
+    if (p) profile = p
+
+    const { data: acc } = await supabase.from("accounts").select("*").eq("user_id", user.user.id)
+    if (acc) accounts = acc
+
+    const { data: tx } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.user.id)
+      .order("transaction_date", { ascending: false })
+      .limit(5)
+    if (tx) transactions = tx
+
+    const { data: ln } = await supabase.from("loans").select("*").eq("user_id", user.user.id).eq("status", "active")
+    if (ln) loans = ln
+
+    const { data: bg } = await supabase.from("budgets").select("*").eq("user_id", user.user.id).eq("is_active", true)
+    if (bg) budgets = bg
   }
 
-  // Fetch user profile
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.user.id).single()
-
-  // Fetch accounts
-  const { data: accounts } = await supabase.from("accounts").select("*").eq("user_id", user.user.id)
-
-  // Calculate total balance
   const totalBalance = (accounts || []).reduce((sum, acc) => sum + (acc.balance || 0), 0)
-
-  // Fetch recent transactions
-  const { data: transactions } = await supabase
-    .from("transactions")
-    .select("*")
-    .eq("user_id", user.user.id)
-    .order("transaction_date", { ascending: false })
-    .limit(5)
-
-  // Fetch active loans
-  const { data: loans } = await supabase.from("loans").select("*").eq("user_id", user.user.id).eq("status", "active")
-
-  // Fetch budgets
-  const { data: budgets } = await supabase.from("budgets").select("*").eq("user_id", user.user.id).eq("is_active", true)
-
   const totalLoansAmount = (loans || []).reduce((sum, loan) => sum + (loan.principal_amount || 0), 0)
   const dueSoonCount = (loans || []).length
 

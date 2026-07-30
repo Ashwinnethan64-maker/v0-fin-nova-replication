@@ -131,9 +131,9 @@ export function LoansList({ loans }: LoansListProps) {
                       <p className="text-xs text-muted-foreground mb-1">Loan Status</p>
                       <div className="space-y-2">
                         {loan.disbursed_at && (
-                          <p className="text-xs">Disbursed: {new Date(loan.disbursed_at).toLocaleDateString()}</p>
+                          <p className="text-xs">Disbursed: {new Date(loan.disbursed_at).toLocaleDateString("en-US")}</p>
                         )}
-                        <p className="text-xs">Applied: {new Date(loan.created_at || "").toLocaleDateString()}</p>
+                        <p className="text-xs">Applied: {new Date(loan.created_at || "").toLocaleDateString("en-US")}</p>
                       </div>
                     </div>
                     <div>

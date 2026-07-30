@@ -25,6 +25,13 @@ export default function LoginPage() {
     setError(null)
 
     try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl || supabaseUrl.includes("placeholder")) {
+        // Demo Mode bypass when live Supabase backend is not configured
+        router.push("/dashboard")
+        return
+      }
+
       const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -53,6 +60,12 @@ export default function LoginPage() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 rounded-lg text-xs text-blue-700 dark:text-blue-300">
+                <span className="font-semibold block mb-1">💡 Local Demo Credentials:</span>
+                <div>Email: <code className="font-mono bg-blue-100 dark:bg-blue-950 px-1 py-0.5 rounded">demo@finnova.com</code></div>
+                <div>Password: <code className="font-mono bg-blue-100 dark:bg-blue-950 px-1 py-0.5 rounded">demo1234</code></div>
+                <div className="text-[11px] text-blue-600 dark:text-blue-400 mt-1">(Any email & password will work in local mode)</div>
+              </div>
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email
@@ -60,7 +73,7 @@ export default function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="demo@finnova.com"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}

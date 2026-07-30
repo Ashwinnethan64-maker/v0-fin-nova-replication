@@ -58,7 +58,7 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   <div>
                     <p className="font-medium text-sm">{transaction.merchant_name || transaction.category}</p>
                     <p className="text-xs text-muted-foreground">
-                      {new Date(transaction.transaction_date || "").toLocaleDateString()}
+                      {new Date(transaction.transaction_date || "").toLocaleDateString("en-US")}
                     </p>
                   </div>
                 </div>

@@ -3,20 +3,26 @@ import { redirect } from "next/navigation"
 import { AccountsList } from "@/components/dashboard/accounts-list"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { isDemoMode, MOCK_ACCOUNTS } from "@/lib/demo"
 
 export default async function AccountsPage() {
-  const supabase = await createClient()
+  let accounts: any[] = MOCK_ACCOUNTS
 
-  const { data: user, error: userError } = await supabase.auth.getUser()
-  if (userError || !user.user) {
-    redirect("/auth/login")
+  if (!isDemoMode()) {
+    const supabase = await createClient()
+
+    const { data: user, error: userError } = await supabase.auth.getUser()
+    if (userError || !user.user) {
+      redirect("/auth/login")
+    }
+
+    const { data: acc } = await supabase
+      .from("accounts")
+      .select("*")
+      .eq("user_id", user.user.id)
+      .order("created_at", { ascending: false })
+    if (acc) accounts = acc
   }
-
-  const { data: accounts } = await supabase
-    .from("accounts")
-    .select("*")
-    .eq("user_id", user.user.id)
-    .order("created_at", { ascending: false })
 
   return (
     <div className="flex-1 flex flex-col">

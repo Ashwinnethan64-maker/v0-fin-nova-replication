@@ -3,21 +3,27 @@ import { redirect } from "next/navigation"
 import { BudgetsList } from "@/components/dashboard/budgets-list"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { isDemoMode, MOCK_BUDGETS } from "@/lib/demo"
 
 export default async function BudgetsPage() {
-  const supabase = await createClient()
+  let budgets: any[] = MOCK_BUDGETS
 
-  const { data: user, error: userError } = await supabase.auth.getUser()
-  if (userError || !user.user) {
-    redirect("/auth/login")
+  if (!isDemoMode()) {
+    const supabase = await createClient()
+
+    const { data: user, error: userError } = await supabase.auth.getUser()
+    if (userError || !user.user) {
+      redirect("/auth/login")
+    }
+
+    const { data: bg } = await supabase
+      .from("budgets")
+      .select("*")
+      .eq("user_id", user.user.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: false })
+    if (bg) budgets = bg
   }
-
-  const { data: budgets } = await supabase
-    .from("budgets")
-    .select("*")
-    .eq("user_id", user.user.id)
-    .eq("is_active", true)
-    .order("created_at", { ascending: false })
 
   return (
     <div className="flex-1 flex flex-col">

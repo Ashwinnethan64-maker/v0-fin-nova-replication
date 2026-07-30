@@ -1,20 +1,26 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { TransactionsList } from "@/components/dashboard/transactions-list"
+import { isDemoMode, MOCK_TRANSACTIONS } from "@/lib/demo"
 
 export default async function TransactionsPage() {
-  const supabase = await createClient()
+  let transactions: any[] = MOCK_TRANSACTIONS
 
-  const { data: user, error: userError } = await supabase.auth.getUser()
-  if (userError || !user.user) {
-    redirect("/auth/login")
+  if (!isDemoMode()) {
+    const supabase = await createClient()
+
+    const { data: user, error: userError } = await supabase.auth.getUser()
+    if (userError || !user.user) {
+      redirect("/auth/login")
+    }
+
+    const { data: tx } = await supabase
+      .from("transactions")
+      .select("*")
+      .eq("user_id", user.user.id)
+      .order("transaction_date", { ascending: false })
+    if (tx) transactions = tx
   }
-
-  const { data: transactions } = await supabase
-    .from("transactions")
-    .select("*")
-    .eq("user_id", user.user.id)
-    .order("transaction_date", { ascending: false })
 
   return (
     <div className="flex-1 flex flex-col">

@@ -3,16 +3,24 @@ import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { isDemoMode, MOCK_USER, MOCK_PROFILE } from "@/lib/demo"
 
 export default async function SettingsPage() {
-  const supabase = await createClient()
+  let user: any = { user: MOCK_USER }
+  let profile: any = MOCK_PROFILE
 
-  const { data: user, error: userError } = await supabase.auth.getUser()
-  if (userError || !user.user) {
-    redirect("/auth/login")
+  if (!isDemoMode()) {
+    const supabase = await createClient()
+
+    const { data: u, error: userError } = await supabase.auth.getUser()
+    if (userError || !u.user) {
+      redirect("/auth/login")
+    }
+    user = u
+
+    const { data: p } = await supabase.from("profiles").select("*").eq("id", user.user.id).single()
+    if (p) profile = p
   }
-
-  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.user.id).single()
 
   return (
     <div className="flex-1 flex flex-col">

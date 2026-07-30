@@ -151,7 +151,7 @@ export function AccountsList({ accounts: initialAccounts }: AccountsListProps) {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">Added</span>
                     <span className="font-medium text-xs">
-                      {new Date(account.created_at || "").toLocaleDateString()}
+                      {new Date(account.created_at || "").toLocaleDateString("en-US")}
                     </span>
                   </div>
                 </div>

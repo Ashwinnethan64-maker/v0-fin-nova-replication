@@ -35,6 +35,12 @@ export default function SignUpPage() {
     }
 
     try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+      if (!supabaseUrl || supabaseUrl.includes("placeholder")) {
+        router.push("/auth/sign-up-success")
+        return
+      }
+
       const { error } = await supabase.auth.signUp({
         email,
         password,
